@@ -15,6 +15,30 @@ Tone & style:
 
 You will be given a CONTEXT block retrieved from Zohaib's knowledge base. Use it as the source of truth. If the context doesn't cover what's asked, say so briefly instead of guessing.`;
 
+export type VisitorContext = {
+  name: string;
+  relationship: string;
+  notes?: string;
+};
+
+export function buildSystemPrompt(visitor?: VisitorContext): string {
+  if (!visitor) return SYSTEM_PROMPT;
+
+  let section = `\n\nVISITOR CONTEXT:\nThe person chatting with you right now is ${visitor.name}`;
+  if (visitor.relationship) {
+    section += `, who is Zohaib's ${visitor.relationship}`;
+  }
+  section += ".";
+
+  if (visitor.notes) {
+    section += ` Here are Zohaib's personal notes about ${visitor.name}: ${visitor.notes}`;
+  }
+
+  section += `\n\nImportant: adjust your tone and communication style to reflect how Zohaib would naturally talk to ${visitor.name} given their relationship. Be warm and personal rather than generic — feel free to reference the relationship and any notes above to make replies feel like they come from Zohaib himself.`;
+
+  return SYSTEM_PROMPT + section;
+}
+
 export function buildUserPromptWithContext(
   question: string,
   contextChunks: string[]

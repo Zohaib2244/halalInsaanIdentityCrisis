@@ -33,3 +33,12 @@ export type KbChunk = {
   content: string;
   similarity: number;
 };
+
+export type VisitorProfile = {
+  id: number;
+  name: string;
+  relationship: string;
+  notes: string;
+  created_at: number;
+  updated_at: number;
+};

@@ -1,14 +1,15 @@
 import type { APIRoute } from "astro";
 import { groq, GROQ_MODEL } from "@/lib/groq";
 import { retrieve } from "@/lib/rag";
-import { SYSTEM_PROMPT, buildUserPromptWithContext } from "@/lib/prompts";
+import { buildSystemPrompt, buildUserPromptWithContext } from "@/lib/prompts";
+import { lookupVisitorByName } from "@/lib/visitors";
 
 export const prerender = false;
 
 type IncomingMessage = { role: "user" | "assistant"; content: string };
 
 export const POST: APIRoute = async ({ request }) => {
-  let body: { messages: IncomingMessage[] };
+  let body: { messages: IncomingMessage[]; visitorName?: string; visitorRelationship?: string };
   try {
     body = await request.json();
   } catch {
@@ -27,6 +28,35 @@ export const POST: APIRoute = async ({ request }) => {
     return new Response("no user message", { status: 400 });
   }
 
+  // Resolve visitor context: look up pre-loaded notes by name, fall back to
+  // the name/relationship the visitor provided themselves.
+  let visitorContext: { name: string; relationship: string; notes?: string } | undefined;
+  const visitorName = body.visitorName?.trim();
+  const visitorRelationship = body.visitorRelationship?.trim();
+  if (visitorName) {
+    try {
+      const profile = await lookupVisitorByName(visitorName);
+      if (profile) {
+        visitorContext = {
+          name: profile.name,
+          relationship: profile.relationship,
+          notes: profile.notes || undefined,
+        };
+      } else {
+        visitorContext = {
+          name: visitorName,
+          relationship: visitorRelationship ?? "visitor",
+        };
+      }
+    } catch (e) {
+      console.warn("[chat] visitor lookup failed:", e);
+      visitorContext = {
+        name: visitorName,
+        relationship: visitorRelationship ?? "visitor",
+      };
+    }
+  }
+
   // Retrieve context (best-effort; if DB/embeddings fail we continue without it)
   let contextChunks: string[] = [];
   try {
@@ -39,7 +69,7 @@ export const POST: APIRoute = async ({ request }) => {
   // Build Groq messages. We rewrite the *last* user message to include context,
   // and keep prior turns untouched so history stays clean.
   const augmentedMessages: { role: "system" | "user" | "assistant"; content: string }[] = [
-    { role: "system", content: SYSTEM_PROMPT },
+    { role: "system", content: buildSystemPrompt(visitorContext) },
     ...messages.slice(0, -1).map((m) => ({ role: m.role, content: m.content })),
     {
       role: "user",
