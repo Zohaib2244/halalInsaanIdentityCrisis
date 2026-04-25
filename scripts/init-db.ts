@@ -83,6 +83,7 @@ async function main() {
       name TEXT NOT NULL COLLATE NOCASE,
       relationship TEXT NOT NULL,
       notes TEXT NOT NULL DEFAULT '',
+      known_visitors TEXT DEFAULT '', 
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL
     )

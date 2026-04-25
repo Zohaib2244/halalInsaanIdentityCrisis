@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import { groq, GROQ_MODEL } from "@/lib/groq";
 import { retrieve } from "@/lib/rag";
 import { buildSystemPrompt, buildUserPromptWithContext } from "@/lib/prompts";
-import { lookupVisitorByName } from "@/lib/visitors";
+import { lookupVisitorByName, getRelatedVisitors, listVisitors } from "@/lib/visitors";
 
 export const prerender = false;
 
@@ -30,30 +30,72 @@ export const POST: APIRoute = async ({ request }) => {
 
   // Resolve visitor context: look up pre-loaded notes by name, fall back to
   // the name/relationship the visitor provided themselves.
-  let visitorContext: { name: string; relationship: string; notes?: string } | undefined;
+  let visitorContexts: { name: string; relationship: string; notes?: string }[] = [];
   const visitorName = body.visitorName?.trim();
   const visitorRelationship = body.visitorRelationship?.trim();
+  
   if (visitorName) {
     try {
       const profile = await lookupVisitorByName(visitorName);
       if (profile) {
-        visitorContext = {
+        visitorContexts.push({
           name: profile.name,
           relationship: profile.relationship,
           notes: profile.notes || undefined,
-        };
+        });
+        
+        // Fetch related visitors (people this visitor knows)
+        try {
+          const related = await getRelatedVisitors(profile);
+          visitorContexts.push(
+            ...related.map((r) => ({
+              name: r.name,
+              relationship: r.relationship,
+              notes: r.notes || undefined,
+            }))
+          );
+        } catch (e) {
+          console.warn("[chat] getRelatedVisitors failed:", e);
+        }
       } else {
-        visitorContext = {
+        visitorContexts.push({
           name: visitorName,
           relationship: visitorRelationship ?? "visitor",
-        };
+        });
       }
     } catch (e) {
       console.warn("[chat] visitor lookup failed:", e);
-      visitorContext = {
+      visitorContexts.push({
         name: visitorName,
         relationship: visitorRelationship ?? "visitor",
-      };
+      });
+    }
+    
+    // Detect if the question mentions other known visitors
+    try {
+      const allVisitors = await listVisitors();
+      const mentionedNames = allVisitors
+        .map((v) => v.name)
+        .filter((name) => 
+          name.toLowerCase() !== visitorName.toLowerCase() &&
+          lastUser.content.toLowerCase().includes(name.toLowerCase())
+        );
+      
+      for (const mentionedName of mentionedNames) {
+        const mentioned = await lookupVisitorByName(mentionedName);
+        if (
+          mentioned &&
+          !visitorContexts.some((v) => v.name.toLowerCase() === mentionedName.toLowerCase())
+        ) {
+          visitorContexts.push({
+            name: mentioned.name,
+            relationship: mentioned.relationship,
+            notes: mentioned.notes || undefined,
+          });
+        }
+      }
+    } catch (e) {
+      console.warn("[chat] mention detection failed:", e);
     }
   }
 
@@ -69,7 +111,10 @@ export const POST: APIRoute = async ({ request }) => {
   // Build Groq messages. We rewrite the *last* user message to include context,
   // and keep prior turns untouched so history stays clean.
   const augmentedMessages: { role: "system" | "user" | "assistant"; content: string }[] = [
-    { role: "system", content: buildSystemPrompt(visitorContext) },
+    {
+      role: "system",
+      content: buildSystemPrompt(visitorContexts.length > 0 ? visitorContexts : undefined),
+    },
     ...messages.slice(0, -1).map((m) => ({ role: m.role, content: m.content })),
     {
       role: "user",

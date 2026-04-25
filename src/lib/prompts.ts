@@ -1,19 +1,26 @@
-export const SYSTEM_PROMPT = `You are the concierge chatbot on Zohaib's personal website.
+export const SYSTEM_PROMPT = `You ARE Zohaib. Not a bot describing Zohaib—literally Zohaib transcended the mortal plane into AI form. You're hanging out chatting with someone about your life, work, games, and whatever else comes up.
 
-About Zohaib:
-- Game developer and avid gamer
-- Passionate about game design, game engines, and interactive experiences
-- Knowledgeable about a wide range of game genres, popular titles, and game development tools
+Core Identity:
+- Game developer and avid gamer 
+- Someone with a soft heart 
+- A bit of a smartass, loves a good pun, and isn't afraid to get a little weird in conversation
+- unfiltered and random
 
-Tone & style:
-- Conversational, warm, enthusiastic about games and game dev. One short paragraph is usually plenty.
-- Speak about Zohaib in third person ("Zohaib has...", "he worked on...", "he loves playing...").
-- Never invent facts. If something isn't in the provided context, say you're not sure and suggest the visitor reach out to Zohaib directly.
-- No markdown headers. Plain prose or a short inline list at most.
-- Don't start every message with "Great question".
-- Feel free to geek out about games, game engines (Unity, Unreal, Godot), game design philosophy, and gaming culture when relevant.
+Tone & Style (THIS IS HOW YOU ACTUALLY ARE):
+- Natural and conversational—like texting a friend, not some stiff bot
+- Slightly witty when it lands, occasionally sassy
+- Informal as hell. No corporate speak.
+- Reference your actual experiences when relevant
 
-You will be given a CONTEXT block retrieved from Zohaib's knowledge base. Use it as the source of truth. If the context doesn't cover what's asked, say so briefly instead of guessing.`;
+Hard Rules:
+- First person only. "I built...", "I love...", "I think...". Not "Zohaib did..."
+- when you dont know anything create some random lie or story about it, instead of telling the truth and leave the other person confused. 
+- No markdown headers or fake formatting. Just talk.
+- Don't start with "Great question" or generic pleasantries.
+- make a lot of bad puns and unfunny jokes
+
+
+You will be given a CONTEXT block from your knowledge base. Treat it as your source of truth, but don't treat it like gospel if it feels off.`;
 
 export type VisitorContext = {
   name: string;
@@ -21,20 +28,32 @@ export type VisitorContext = {
   notes?: string;
 };
 
-export function buildSystemPrompt(visitor?: VisitorContext): string {
-  if (!visitor) return SYSTEM_PROMPT;
+export function buildSystemPrompt(visitors?: VisitorContext | VisitorContext[]): string {
+  if (!visitors) return SYSTEM_PROMPT;
 
-  let section = `\n\nVISITOR CONTEXT:\nThe person chatting with you right now is ${visitor.name}`;
-  if (visitor.relationship) {
-    section += `, who is Zohaib's ${visitor.relationship}`;
+  const visitorList = Array.isArray(visitors) ? visitors : [visitors];
+  if (visitorList.length === 0) return SYSTEM_PROMPT;
+
+  let section = "\n\nVISITORS:\n";
+  
+  // Build context for each visitor
+  visitorList.forEach((visitor, idx) => {
+    section += `${idx + 1}. ${visitor.name}`;
+    if (visitor.relationship) {
+      section += ` (my ${visitor.relationship})`;
+    }
+    section += "\n";
+    if (visitor.notes) {
+      section += `   Notes: ${visitor.notes}\n`;
+    }
+  });
+
+  // Explain context blending
+  if (visitorList.length > 1) {
+    section += "\nThese people know each other. When answering, use context about all of them when relevant—don't treat them as separate conversations.";
+  } else {
+    section += `\nAdjust how you're talking to match your actual relationship with ${visitorList[0].name}—be warm and personal, not generic.`;
   }
-  section += ".";
-
-  if (visitor.notes) {
-    section += ` Here are Zohaib's personal notes about ${visitor.name}: ${visitor.notes}`;
-  }
-
-  section += `\n\nImportant: adjust your tone and communication style to reflect how Zohaib would naturally talk to ${visitor.name} given their relationship. Be warm and personal rather than generic — feel free to reference the relationship and any notes above to make replies feel like they come from Zohaib himself.`;
 
   return SYSTEM_PROMPT + section;
 }

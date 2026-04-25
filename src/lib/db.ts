@@ -4,8 +4,8 @@ let _client: Client | undefined;
 
 function getClient(): Client {
   if (!_client) {
-    const url = process.env.TURSO_DATABASE_URL;
-    const authToken = process.env.TURSO_AUTH_TOKEN;
+    const url = import.meta.env.TURSO_DATABASE_URL ?? process.env.TURSO_DATABASE_URL;
+    const authToken = import.meta.env.TURSO_AUTH_TOKEN ?? process.env.TURSO_AUTH_TOKEN;
     if (!url) throw new Error("TURSO_DATABASE_URL is not set");
     _client = createClient({ url, authToken });
   }
@@ -39,6 +39,7 @@ export type VisitorProfile = {
   name: string;
   relationship: string;
   notes: string;
+  known_visitors?: string; // comma-separated list of visitor names they know
   created_at: number;
   updated_at: number;
 };

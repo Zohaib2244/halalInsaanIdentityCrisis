@@ -7,6 +7,7 @@ type Visitor = {
   name: string;
   relationship: string;
   notes: string;
+  known_visitors?: string;
   updated_at: number;
 };
 
@@ -16,6 +17,7 @@ export default function VisitorManager() {
   const [name, setName] = useState("");
   const [relationship, setRelationship] = useState("");
   const [notes, setNotes] = useState("");
+  const [knownVisitors, setKnownVisitors] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,6 +45,7 @@ export default function VisitorManager() {
     setName(v.name);
     setRelationship(v.relationship);
     setNotes(v.notes);
+    setKnownVisitors(v.known_visitors || "");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -51,6 +54,7 @@ export default function VisitorManager() {
     setName("");
     setRelationship("");
     setNotes("");
+    setKnownVisitors("");
   }
 
   async function save(e: React.FormEvent) {
@@ -66,6 +70,7 @@ export default function VisitorManager() {
           name: name.trim(),
           relationship: relationship.trim(),
           notes: notes.trim(),
+          known_visitors: knownVisitors.trim(),
         }),
       });
       if (!res.ok) {
@@ -137,6 +142,20 @@ export default function VisitorManager() {
           className="w-full px-4 py-3 rounded-xl bg-bg-subtle border border-border-subtle focus:border-border outline-none text-fg placeholder:text-fg-subtle text-sm resize-y"
         />
 
+        <div>
+          <label className="block text-xs text-fg-subtle mb-2">
+            people this person knows (comma-separated names, optional)
+          </label>
+          <input
+            type="text"
+            value={knownVisitors}
+            onChange={(e) => setKnownVisitors(e.target.value)}
+            placeholder="e.g. Sarah, Mike, Mom — when they ask about these people, the chatbot will load their profiles too"
+            maxLength={200}
+            className="w-full px-4 py-2.5 rounded-xl bg-bg-subtle border border-border-subtle focus:border-border outline-none text-fg placeholder:text-fg-subtle text-sm"
+          />
+        </div>
+
         <div className="flex items-center justify-end gap-2">
           {isEditing && (
             <button
@@ -201,6 +220,9 @@ export default function VisitorManager() {
                       </p>
                       {v.notes && (
                         <p className="text-xs text-fg-subtle mt-0.5 line-clamp-2">{v.notes}</p>
+                      )}
+                      {v.known_visitors && (
+                        <p className="text-xs text-fg-subtle mt-0.5">knows: {v.known_visitors}</p>
                       )}
                       <p className="text-xs text-fg-subtle font-mono mt-1">
                         updated {fmt.format(v.updated_at)}

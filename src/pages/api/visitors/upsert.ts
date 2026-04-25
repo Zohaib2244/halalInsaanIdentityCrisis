@@ -9,7 +9,7 @@ export const POST: APIRoute = async ({ request }) => {
     return new Response("unauthorized", { status: 401 });
   }
 
-  let body: { name?: string; relationship?: string; notes?: string };
+  let body: { name?: string; relationship?: string; notes?: string; known_visitors?: string };
   try {
     body = await request.json();
   } catch {
@@ -19,13 +19,14 @@ export const POST: APIRoute = async ({ request }) => {
   const name = body.name?.trim();
   const relationship = body.relationship?.trim();
   const notes = body.notes?.trim() ?? "";
+  const known_visitors = body.known_visitors?.trim() ?? "";
 
   if (!name || !relationship) {
     return new Response("name and relationship are required", { status: 400 });
   }
 
   try {
-    const visitor = await upsertVisitor(name, relationship, notes);
+    const visitor = await upsertVisitor(name, relationship, notes, known_visitors);
     return new Response(JSON.stringify(visitor), {
       status: 200,
       headers: { "Content-Type": "application/json" },

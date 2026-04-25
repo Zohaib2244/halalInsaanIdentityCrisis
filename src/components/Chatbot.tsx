@@ -9,9 +9,9 @@ type Message = {
 };
 
 const SUGGESTIONS = [
-  "Who is Zohaib?",
-  "What games does he play?",
-  "What has he built?",
+  "who am i talking to?",
+  "What are you all about?",
+  "What do you think about me?",
 ];
 
 export default function Chatbot() {
@@ -183,7 +183,7 @@ export default function Chatbot() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={onKeyDown}
             rows={1}
-            placeholder="ask me anything about zohaib..."
+            placeholder="what's the fizzle my gizzle..."
             className="flex-1 resize-none bg-transparent outline-none text-fg placeholder:text-fg-subtle text-[15px] leading-6 max-h-[200px]"
             disabled={isStreaming}
           />
