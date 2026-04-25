@@ -75,10 +75,29 @@ async function main() {
     )
   `);
 
+  // Visitor profiles: Zohaib pre-loads notes about specific people so the
+  // chatbot can personalise its replies when that person identifies themselves.
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS visitor_profiles (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL COLLATE NOCASE,
+      relationship TEXT NOT NULL,
+      notes TEXT NOT NULL DEFAULT '',
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    )
+  `);
+
+  await db.execute(`
+    CREATE UNIQUE INDEX IF NOT EXISTS visitor_profiles_name_idx
+    ON visitor_profiles (name COLLATE NOCASE)
+  `);
+
   console.log("✓ done.");
   console.log("  - kb_documents");
   console.log("  - kb_chunks (with vector index)");
   console.log("  - settings");
+  console.log("  - visitor_profiles");
 }
 
 main().catch((e) => {

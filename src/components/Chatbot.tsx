@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowUp } from "lucide-react";
+import VisitorIdentity, { type VisitorInfo } from "./VisitorIdentity";
 
 type Message = {
   role: "user" | "assistant";
@@ -8,9 +9,9 @@ type Message = {
 };
 
 const SUGGESTIONS = [
-  "Who is Shahwaiz?",
-  "What's he working on?",
-  "How can I reach him?",
+  "Who is Zohaib?",
+  "What games does he play?",
+  "What has he built?",
 ];
 
 export default function Chatbot() {
@@ -18,6 +19,7 @@ export default function Chatbot() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [visitor, setVisitor] = useState<VisitorInfo | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -57,6 +59,8 @@ export default function Chatbot() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: nextMessages.slice(0, -1), // drop the empty assistant placeholder
+          visitorName: visitor?.name,
+          visitorRelationship: visitor?.relationship,
         }),
         signal: controller.signal,
       });
@@ -118,7 +122,7 @@ export default function Chatbot() {
             {/* Tries the dashboard-uploaded pfp first, falls back to the static SVG */}
             <img
               src="/api/pfp"
-              alt="Shahwaiz"
+              alt="Zohaib"
               className="w-full h-full object-cover"
               onError={(e) => {
                 const img = e.target as HTMLImageElement;
@@ -132,6 +136,9 @@ export default function Chatbot() {
           />
         </motion.div>
       </div>
+
+      {/* Visitor identity */}
+      <VisitorIdentity onIdentify={setVisitor} />
 
       {/* Response area */}
       <div className="min-h-[120px] mb-4">
@@ -176,7 +183,7 @@ export default function Chatbot() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={onKeyDown}
             rows={1}
-            placeholder="ask me anything about shahwaiz..."
+            placeholder="ask me anything about zohaib..."
             className="flex-1 resize-none bg-transparent outline-none text-fg placeholder:text-fg-subtle text-[15px] leading-6 max-h-[200px]"
             disabled={isStreaming}
           />

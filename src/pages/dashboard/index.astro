@@ -2,6 +2,7 @@
 import Layout from "@/layouts/Layout.astro";
 import KbManager from "@/components/KbManager";
 import PfpUploader from "@/components/PfpUploader";
+import VisitorManager from "@/components/VisitorManager";
 import { isAuthed } from "@/lib/auth";
 
 export const prerender = false;
@@ -11,12 +12,12 @@ if (!isAuthed(Astro.request)) {
 }
 ---
 
-<Layout title="dashboard — shahwaiz">
+<Layout title="dashboard — zohaib">
   <div class="flex items-center justify-between mb-8">
     <div>
       <h1 class="font-serif text-2xl tracking-tight">dashboard</h1>
       <p class="text-fg-muted text-sm mt-1">
-        the chatbot's knowledge base.
+        manage your knowledge base and visitor profiles.
       </p>
     </div>
     <form method="POST" action="/api/auth/logout">
@@ -29,8 +30,23 @@ if (!isAuthed(Astro.request)) {
     </form>
   </div>
 
-  <div class="space-y-8">
+  <div class="space-y-12">
     <PfpUploader client:load />
-    <KbManager client:load />
+
+    <section>
+      <h2 class="font-serif text-xl tracking-tight mb-1">visitor profiles</h2>
+      <p class="text-fg-muted text-sm mb-6">
+        Add people you know so the chatbot personalizes its replies when they identify themselves.
+      </p>
+      <VisitorManager client:load />
+    </section>
+
+    <section>
+      <h2 class="font-serif text-xl tracking-tight mb-1">knowledge base</h2>
+      <p class="text-fg-muted text-sm mb-6">
+        Documents the chatbot uses to answer questions about you.
+      </p>
+      <KbManager client:load />
+    </section>
   </div>
 </Layout>
