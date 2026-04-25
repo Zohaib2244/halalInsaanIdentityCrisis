@@ -8,9 +8,9 @@ type Message = {
 };
 
 const SUGGESTIONS = [
-  "Who is Shahwaiz?",
-  "What's he working on?",
-  "How can I reach him?",
+  "Who is Zohaib?",
+  "What games does he play?",
+  "What has he built?",
 ];
 
 export default function Chatbot() {
@@ -118,7 +118,7 @@ export default function Chatbot() {
             {/* Tries the dashboard-uploaded pfp first, falls back to the static SVG */}
             <img
               src="/api/pfp"
-              alt="Shahwaiz"
+              alt="Zohaib"
               className="w-full h-full object-cover"
               onError={(e) => {
                 const img = e.target as HTMLImageElement;
@@ -176,7 +176,7 @@ export default function Chatbot() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={onKeyDown}
             rows={1}
-            placeholder="ask me anything about shahwaiz..."
+            placeholder="ask me anything about zohaib..."
             className="flex-1 resize-none bg-transparent outline-none text-fg placeholder:text-fg-subtle text-[15px] leading-6 max-h-[200px]"
             disabled={isStreaming}
           />

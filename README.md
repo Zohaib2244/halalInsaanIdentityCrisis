@@ -1,10 +1,11 @@
-# shahwaiz.dev
+# gamedev-site
 
-Minimal personal site. Astro + Groq + Turso + Vercel.
+Personal chatbot site for Zohaib — game developer and avid gamer. Astro + Groq + Turso + Vercel.
 
 ## Features
 
-- Homepage with a streaming chatbot that answers questions about you (with RAG over a personal knowledge base)
+- Homepage with a streaming chatbot that answers questions about Zohaib (with RAG over a personal knowledge base)
+- Bot knows about Zohaib's favorite games, game dev projects, gaming interests, and game design philosophy
 - Blog powered by markdown files in `src/content/blog/`
 - Password-protected `/dashboard` to upload/list/delete knowledge base docs
 - Claude-inspired dark palette, Fraunces serif + Inter body
@@ -20,7 +21,7 @@ Minimal personal site. Astro + Groq + Turso + Vercel.
 | Database | [Turso](https://turso.tech) (libSQL with native vector search) |
 | LLM | [Groq](https://groq.com) (default: `llama-3.3-70b-versatile`) |
 | Embeddings | [Voyage AI](https://voyageai.com) (`voyage-3-lite`, 512-d) |
-| DNS | Cloudflare Domains (shahwaiz.dev) → Vercel |
+| DNS | Cloudflare Domains (your-domain) → Vercel |
 
 ---
 
@@ -29,8 +30,8 @@ Minimal personal site. Astro + Groq + Turso + Vercel.
 ### 1. Clone locally
 
 ```bash
-git clone <your-repo-url> shahwaiz-dev
-cd shahwaiz-dev
+git clone <your-repo-url> gamedev-site
+cd gamedev-site
 npm install
 cp .env.example .env
 ```
@@ -49,9 +50,9 @@ All free. Aim for ~15 minutes.
 **Turso** — https://turso.tech
 - Install the CLI: `brew install tursodatabase/tap/turso` (or see their docs).
 - `turso auth login`
-- `turso db create shahwaiz-dev`
-- `turso db show shahwaiz-dev --url` → paste as `TURSO_DATABASE_URL`
-- `turso db tokens create shahwaiz-dev` → paste as `TURSO_AUTH_TOKEN`
+- `turso db create gamedev-site`
+- `turso db show gamedev-site --url` → paste as `TURSO_DATABASE_URL`
+- `turso db tokens create gamedev-site` → paste as `TURSO_AUTH_TOKEN`
 
 **Dashboard auth**
 - Pick any password → `DASHBOARD_PASSWORD`
@@ -73,7 +74,13 @@ npm run dev
 
 Visit http://localhost:4321. The chatbot will work without any KB docs (it just won't know anything about you yet). Go to http://localhost:4321/dashboard to add some.
 
-**What to upload first:** your resume, a bio, a list of current projects, how-to-reach-you info. Paste them as separate documents — the retrieval is per-chunk anyway.
+**What to upload first (game dev knowledge base):**
+- A list of your favorite games (title, genre, platform, why you love it)
+- Your game dev experience: engines you use (Unity, Unreal, Godot, etc.), languages, years of experience
+- Game projects you've shipped or are building (name, description, tech stack, status)
+- Gaming interests: genres you enjoy most, multiplayer vs solo, competitive vs casual
+- Game design philosophy: what makes a great game in your opinion
+- Contact info and social links (GitHub, itch.io, Twitter/X, LinkedIn)
 
 ---
 
@@ -85,7 +92,7 @@ Visit http://localhost:4321. The chatbot will work without any KB docs (it just 
 git init
 git add .
 git commit -m "initial"
-gh repo create shahwaiz-dev --private --source=. --push
+gh repo create gamedev-site --private --source=. --push
 # or create the repo on github.com and push manually
 ```
 
@@ -103,9 +110,9 @@ gh repo create shahwaiz-dev --private --source=. --push
 
 ### 7. Wire up the domain
 
-In Vercel: Project → Settings → Domains → **Add `shahwaiz.dev`**. Vercel will give you DNS records (usually an A record for the apex and a CNAME for `www`).
+In Vercel: Project → Settings → Domains → **Add your custom domain**. Vercel will give you DNS records (usually an A record for the apex and a CNAME for `www`).
 
-In Cloudflare: Domains → shahwaiz.dev → DNS records. Add whatever Vercel asked for. **Set proxy to "DNS only" (grey cloud)** — you want Vercel's edge handling TLS, not Cloudflare proxying on top.
+In Cloudflare: Domains → your domain → DNS records. Add whatever Vercel asked for. **Set proxy to "DNS only" (grey cloud)** — you want Vercel's edge handling TLS, not Cloudflare proxying on top.
 
 Propagation is usually a few minutes. HTTPS is automatic.
 
@@ -133,7 +140,13 @@ Commit and push. Vercel redeploys in ~20 seconds.
 
 ### Update the knowledge base
 
-Go to `https://shahwaiz.dev/dashboard`, sign in with your password, paste or upload new content. The bot picks it up immediately — no redeploy needed.
+Go to `https://<your-domain>/dashboard`, sign in with your password, paste or upload new content. The bot picks it up immediately — no redeploy needed.
+
+**Game dev content ideas to add over time:**
+- Reviews or impressions of games you've recently played
+- Post-mortems or dev logs for your game projects
+- Notes on game mechanics or design patterns you find interesting
+- Tutorials or resources you recommend to other game devs
 
 ### Swap the LLM
 
