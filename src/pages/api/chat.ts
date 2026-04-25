@@ -77,13 +77,19 @@ export const POST: APIRoute = async ({ request }) => {
     },
   ];
 
-  const stream = await groq.chat.completions.create({
-    model: GROQ_MODEL,
-    messages: augmentedMessages,
-    temperature: 0.4,
-    max_tokens: 512,
-    stream: true,
-  });
+  let stream: Awaited<ReturnType<typeof groq.chat.completions.create>>;
+  try {
+    stream = await groq.chat.completions.create({
+      model: GROQ_MODEL,
+      messages: augmentedMessages,
+      temperature: 0.4,
+      max_tokens: 512,
+      stream: true,
+    });
+  } catch (err) {
+    console.error("[chat] groq create failed:", err);
+    return new Response("chat unavailable", { status: 500 });
+  }
 
   const encoder = new TextEncoder();
   const body$ = new ReadableStream({
